@@ -5,7 +5,7 @@ from sqlalchemy import pool
 from alembic import context
 
 # Import model-model Anda
-from app.models import user, news, program, map
+from app.models import user, program, map 
 from app.core.database import Base
 from app.core.config import settings
 

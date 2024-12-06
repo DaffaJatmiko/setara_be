@@ -6,7 +6,8 @@ from app.api.endpoints import (
     users,       # Endpoint manajemen user
     # news,        # Endpoint berita
     programs,    # Endpoint program
-    # maps         # Endpoint peta
+    gudang,
+    lahan
 )
 
 # Buat router utama
@@ -23,6 +24,18 @@ api_router.include_router(
     programs.router, 
     prefix="/programs", 
     tags=["programs"]
+)
+
+api_router.include_router(
+    gudang.router, 
+    prefix="/gudang",
+    tags=["gudang"]
+)
+
+api_router.include_router(
+    lahan.router,
+    prefix="/lahan",
+    tags=["lahan"]
 )
 
 # api_router.include_router(

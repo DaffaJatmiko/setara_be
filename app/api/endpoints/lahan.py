@@ -7,6 +7,8 @@ from app.models.map import Lahan
 from app.services.map import create_lahan, get_all_lahan, delete_lahan
 from shapely import wkt
 
+from ...utils.helpers import parse_wkt_to_coordinates
+
 router = APIRouter()
 
 def get_db():
@@ -47,14 +49,6 @@ def list_lahan(db: Session = Depends(get_db)):
         print(f"Lahan {item.id} ({item.nama}) coordinates: {item.koordinat}")
     
     return result
-
-def parse_wkt_to_coordinates(wkt_str: str):
-    """ Fungsi untuk mengonversi WKT (Well Known Text) ke list koordinat """
-    print(f"Parsing WKT: {wkt_str}")  # Pastikan ini adalah string WKT yang valid
-    polygon = wkt.loads(wkt_str)  # Parsing WKT menjadi objek Polygon
-    coordinates = list(polygon.exterior.coords)  # Mengembalikan koordinat sebagai list
-    print(f"Parsed coordinates: {coordinates}")
-    return coordinates
 
 @router.delete("/{lahan_id}")
 def remove_lahan(lahan_id: int, db: Session = Depends(get_db)):

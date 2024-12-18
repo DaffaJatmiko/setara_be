@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 class GudangCreate(BaseModel):
     nama: str
-    lokasi: Tuple[float, float]  # (longitude, latitude)
+    lokasi: Tuple[float, float]  
 
 class GudangRead(GudangCreate):
     id: int
@@ -11,11 +11,11 @@ class GudangRead(GudangCreate):
     lokasi: Tuple[float, float]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class LahanCreate(BaseModel):
     nama: str
-    koordinat: List[Tuple[float, float]]  # List of coordinates for polygon
+    koordinat: list[list[float]]
 
 class LahanRead(LahanCreate):
     id: int

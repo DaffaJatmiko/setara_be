@@ -17,8 +17,18 @@ def get_db():
 
 @router.post("/", response_model=GudangRead)
 def add_gudang(gudang: GudangCreate, db: Session = Depends(get_db)):
-    return create_gudang(db, gudang.nama, gudang.lokasi[0], gudang.lokasi[1])
-
+    created_gudang = create_gudang(db, gudang.nama, gudang.lokasi[0], gudang.lokasi[1])
+    # Ambil koordinat lon dan lat untuk schema respons
+    lon, lat = db.query(
+        geo_func.ST_X(Gudang.lokasi),
+        geo_func.ST_Y(Gudang.lokasi)
+    ).filter(Gudang.id == created_gudang.id).first()
+    
+    return GudangRead(
+        id=created_gudang.id,
+        nama=created_gudang.nama,
+        lokasi=(lon, lat)  # Format sesuai schema
+    )
 @router.get("/", response_model=list[GudangRead])
 def list_gudang(db: Session = Depends(get_db)):
     # Query Gudang and extract ST_X and ST_Y directly from the database

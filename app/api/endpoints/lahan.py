@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
+# app/api/endpoints/lahan.py
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from geoalchemy2 import functions as geo_func
 from app.core.database import SessionLocal
+from app.core.middleware import RBACMiddleware
 from app.schemas.map import LahanCreate, LahanRead
 from app.models.map import Lahan
 from app.services.map import create_lahan, get_all_lahan, delete_lahan
@@ -18,38 +20,38 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/", response_model=LahanRead)
+@router.post(
+    "/", 
+    response_model=LahanRead, 
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(RBACMiddleware.require_role(['user', 'superuser']))]
+)
 def add_lahan(lahan: LahanCreate, db: Session = Depends(get_db)):
     return create_lahan(db, lahan.nama, lahan.koordinat)
 
-@router.get("/", response_model=list[LahanRead])
+@router.get(
+    "/", 
+    response_model=list[LahanRead]
+)
 def list_lahan(db: Session = Depends(get_db)):
-    print("Fetching list of Lahan")
-    # Query Lahan dan ekstrak koordinat Polygon menggunakan ST_AsText (atau ST_AsGeoJSON)
     lahans = db.query(
         Lahan.id,
         Lahan.nama,
         geo_func.ST_AsText(Lahan.area).label("area_wkt")
     ).all()
 
-    # Print data yang diambil
-    print(f"Fetched {len(lahans)} Lahan records from database")
-
-    # Mengubah koordinat WKT menjadi bentuk list of tuples (lon, lat)
     result = [
         LahanRead(
             id=l[0],
             nama=l[1],
-            koordinat=parse_wkt_to_coordinates(l[2])  # Mengonversi WKT ke list koordinat
+            koordinat=parse_wkt_to_coordinates(l[2])
         ) for l in lahans
     ]
-    
-    # Print hasil konversi koordinat
-    for item in result:
-        print(f"Lahan {item.id} ({item.nama}) coordinates: {item.koordinat}")
-    
     return result
 
-@router.delete("/{lahan_id}")
+@router.delete(
+    "/{lahan_id}",
+    dependencies=[Depends(RBACMiddleware.require_role(['superuser']))]
+)
 def remove_lahan(lahan_id: int, db: Session = Depends(get_db)):
     return delete_lahan(db, lahan_id)
